@@ -428,6 +428,10 @@ def _join_config(dest_config: dict, additional_config: dict):
         "actions_server_url", None
     ) or additional_config.get("actions_server_url", None)
 
+    dest_config["custom_error_message"] = dest_config.get(
+        "custom_error_message", None
+    ) or additional_config.get("custom_error_message", None)
+
     dest_config["sensitive_data_detection"] = {
         **dest_config.get("sensitive_data_detection", {}),
         **additional_config.get("sensitive_data_detection", {}),
@@ -473,6 +477,7 @@ def _join_config(dest_config: dict, additional_config: dict):
             "prompts",
             "docs",
             "actions_server_url",
+            "custom_error_message",
             "sensitive_data_detection",
             "embedding_search_provider",
             "import_paths",
@@ -701,6 +706,11 @@ class RailsConfig(BaseModel):
     imported_paths: Optional[Dict[str, str]] = Field(
         default_factory=dict,
         description="The mapping between the imported paths and the actual full path to which they were resolved.",
+    )
+
+    custom_error_message: Optional[str] = Field(
+        default=None,
+        description="The custom error messages that should be used if something goes wrong.",
     )
 
     # Some tasks need to be as deterministic as possible. The lowest possible temperature

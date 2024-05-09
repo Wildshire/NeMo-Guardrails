@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Changed
+
+* Allow custom error message by @saradiazdelser.
+
 ### Fixed
 
 * [#465](https://github.com/NVIDIA/NeMo-Guardrails/pull/465) Fix issue with empty response for multiple messages by @saradiazdelser.
@@ -84,6 +88,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 * [#331](https://github.com/NVIDIA/NeMo-Guardrails/pull/331) Huggingface pipeline streaming by @trebedea.
 
 Documentation:
+
 * [#311](https://github.com/NVIDIA/NeMo-Guardrails/pull/311) Update documentation to demonstrate the use of output rails when using a custom RAG by @niels-garve.
 * [#347](https://github.com/NVIDIA/NeMo-Guardrails/pull/347) Add [detailed logging docs](./docs/user_guides/detailed_logging) by @erickgalinkin.
 * [#354](https://github.com/NVIDIA/NeMo-Guardrails/pull/354) [Input and output rails only guide](./docs/user_guides/input_output_rails_only) by @trebedea.
@@ -329,4 +334,4 @@ Documentation:
 
 ### Added
 
-- First alpha release.
+* First alpha release.

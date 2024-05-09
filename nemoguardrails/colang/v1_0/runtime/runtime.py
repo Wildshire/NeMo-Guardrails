@@ -366,10 +366,11 @@ class RuntimeV1_0(Runtime):
 
             # If the action execution failed, we return a hardcoded message
             if status == "failed":
-                # TODO: make this message configurable.
-                result = self._internal_error_action_result(
-                    "I'm sorry, an internal error has occurred."
+                error_message = (
+                    self.config.custom_error_message
+                    or "I'm sorry, an internal error has occurred."
                 )
+                result = self._internal_error_action_result(error_message)
 
         return_value = result
         return_events = []
