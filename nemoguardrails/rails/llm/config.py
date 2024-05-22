@@ -161,6 +161,10 @@ class TaskPrompt(BaseModel):
         default=None,
         description="If specified, will be configure stop tokens for models that support this.",
     )
+    parameters: Optional[dict] = Field(
+        default={},
+        description="If specified, will configure additional parameters in the llm call for this task.",
+    )
 
     @root_validator(pre=True, allow_reuse=True)
     def check_fields(cls, values):

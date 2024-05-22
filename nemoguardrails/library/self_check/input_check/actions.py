@@ -61,7 +61,11 @@ async def self_check_input(
         # Initialize the LLMCallInfo object
         llm_call_info_var.set(LLMCallInfo(task=Task.SELF_CHECK_INPUT.value))
 
-        with llm_params(llm, temperature=config.lowest_temperature):
+        parameters = llm_task_manager.get_task_parameters(
+            task=Task.SELF_CHECK_INPUT.value
+        )
+
+        with llm_params(llm, **parameters):
             check = await llm_call(llm, prompt, stop=stop)
 
         check = check.lower().strip()

@@ -396,8 +396,12 @@ class LLMGenerationActions:
             # Initialize the LLMCallInfo object
             llm_call_info_var.set(LLMCallInfo(task=Task.GENERATE_USER_INTENT.value))
 
+            parameters = self.llm_task_manager.get_task_parameters(
+                task=Task.GENERATE_USER_INTENT.value
+            )
+
             # We make this call with temperature 0 to have it as deterministic as possible.
-            with llm_params(llm, temperature=self.config.lowest_temperature):
+            with llm_params(llm, **parameters):
                 result = await llm_call(llm, prompt)
 
             # Parse the output using the associated parser
@@ -458,11 +462,16 @@ class LLMGenerationActions:
                     # Initialize the LLMCallInfo object
                     llm_call_info_var.set(LLMCallInfo(task=Task.GENERAL.value))
 
+                    parameters = self.llm_task_manager.get_task_parameters(
+                        task=Task.GENERATE_USER_INTENT.value
+                    )
+
                     generation_options: GenerationOptions = generation_options_var.get()
                     with llm_params(
                         llm,
                         **(
-                            (generation_options and generation_options.llm_params) or {}
+                            (generation_options and generation_options.llm_params)
+                            or parameters
                         ),
                     ):
                         text = await llm_call(
@@ -478,11 +487,17 @@ class LLMGenerationActions:
                 prompt = self.llm_task_manager.render_task_prompt(
                     task=Task.GENERAL, events=events
                 )
+                parameters = self.llm_task_manager.get_task_parameters(
+                    task=Task.GENERATE_USER_INTENT.value
+                )
 
                 generation_options: GenerationOptions = generation_options_var.get()
                 with llm_params(
                     llm,
-                    **((generation_options and generation_options.llm_params) or {}),
+                    **(
+                        (generation_options and generation_options.llm_params)
+                        or parameters
+                    ),
                 ):
                     result = await llm_call(
                         llm,
@@ -564,8 +579,12 @@ class LLMGenerationActions:
             # Initialize the LLMCallInfo object
             llm_call_info_var.set(LLMCallInfo(task=Task.GENERATE_NEXT_STEPS.value))
 
-            # We use temperature 0 for next step prediction as well
-            with llm_params(llm, temperature=self.config.lowest_temperature):
+            parameters = self.llm_task_manager.get_task_parameters(
+                task=Task.GENERATE_NEXT_STEPS.value
+            )
+
+            # We make this call with temperature 0 to have it as deterministic as possible.
+            with llm_params(llm, **parameters):
                 result = await llm_call(llm, prompt)
 
             # Parse the output using the associated parser
@@ -801,11 +820,16 @@ class LLMGenerationActions:
                     # in passthrough mode, input rails can still alter the input.
                     prompt = context.get("user_message")
 
+                    parameters = self.llm_task_manager.get_task_parameters(
+                        task=Task.GENERATE_BOT_MESSAGE.value
+                    )
+
                     generation_options: GenerationOptions = generation_options_var.get()
                     with llm_params(
                         llm,
                         **(
-                            (generation_options and generation_options.llm_params) or {}
+                            (generation_options and generation_options.llm_params)
+                            or parameters
                         ),
                     ):
                         result = await llm_call(
@@ -858,10 +882,17 @@ class LLMGenerationActions:
                 # Initialize the LLMCallInfo object
                 llm_call_info_var.set(LLMCallInfo(task=Task.GENERATE_BOT_MESSAGE.value))
 
+                parameters = self.llm_task_manager.get_task_parameters(
+                    task=Task.GENERATE_BOT_MESSAGE.value
+                )
+
                 generation_options: GenerationOptions = generation_options_var.get()
                 with llm_params(
                     llm,
-                    **((generation_options and generation_options.llm_params) or {}),
+                    **(
+                        (generation_options and generation_options.llm_params)
+                        or parameters
+                    ),
                 ):
                     result = await llm_call(
                         llm, prompt, custom_callback_handlers=[streaming_handler]
@@ -961,7 +992,11 @@ class LLMGenerationActions:
         # Initialize the LLMCallInfo object
         llm_call_info_var.set(LLMCallInfo(task=Task.GENERATE_VALUE.value))
 
-        with llm_params(llm, temperature=self.config.lowest_temperature):
+        parameters = self.llm_task_manager.get_task_parameters(
+            task=Task.GENERATE_VALUE.value
+        )
+
+        with llm_params(llm, **parameters):
             result = await llm_call(llm, prompt)
 
         # Parse the output using the associated parser
@@ -1129,7 +1164,12 @@ class LLMGenerationActions:
                 # We buffer the content, so we can get a chance to look at the
                 # first k lines.
                 await _streaming_handler.enable_buffering()
-                with llm_params(llm, temperature=self.config.lowest_temperature):
+
+                parameters = self.llm_task_manager.get_task_parameters(
+                    task=Task.GENERATE_INTENT_STEPS_MESSAGE.value
+                )
+
+                with llm_params(llm, **parameters):
                     asyncio.create_task(
                         llm_call(
                             llm,
@@ -1161,10 +1201,17 @@ class LLMGenerationActions:
                     LLMCallInfo(task=Task.GENERATE_INTENT_STEPS_MESSAGE.value)
                 )
 
+                parameters = self.llm_task_manager.get_task_parameters(
+                    task=Task.GENERATE_INTENT_STEPS_MESSAGE.value
+                )
+
                 generation_options: GenerationOptions = generation_options_var.get()
+
                 additional_params = {
-                    **((generation_options and generation_options.llm_params) or {}),
-                    "temperature": self.config.lowest_temperature,
+                    **(
+                        (generation_options and generation_options.llm_params)
+                        or parameters
+                    )
                 }
                 with llm_params(llm, **additional_params):
                     result = await llm_call(llm, prompt)
@@ -1241,10 +1288,17 @@ class LLMGenerationActions:
             # Initialize the LLMCallInfo object
             llm_call_info_var.set(LLMCallInfo(task=Task.GENERAL.value))
 
+            parameters = self.llm_task_manager.get_task_parameters(
+                task=Task.GENERATE_INTENT_STEPS_MESSAGE.value
+            )
+
             # We make this call with temperature 0 to have it as deterministic as possible.
             generation_options: GenerationOptions = generation_options_var.get()
             with llm_params(
-                llm, **((generation_options and generation_options.llm_params) or {})
+                llm,
+                **(
+                    (generation_options and generation_options.llm_params) or parameters
+                ),
             ):
                 result = await llm_call(llm, prompt)
 
