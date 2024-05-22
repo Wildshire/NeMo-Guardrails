@@ -33,6 +33,7 @@ async def llm_call(
     llm: BaseLanguageModel,
     prompt: Union[str, List[dict]],
     stop: Optional[List[str]] = None,
+    parameters: Optional[dict] = None,
     custom_callback_handlers: Optional[List[AsyncCallbackHandler]] = None,
 ) -> str:
     """Calls the LLM with a prompt and returns the generated text."""
@@ -54,7 +55,10 @@ async def llm_call(
     if isinstance(prompt, str):
         # stop sinks here
         result = await llm.agenerate_prompt(
-            [StringPromptValue(text=prompt)], callbacks=all_callbacks, stop=stop
+            [StringPromptValue(text=prompt)],
+            callbacks=all_callbacks,
+            stop=stop,
+            **parameters,
         )
         llm_call_info.raw_response = result.llm_output
 
@@ -73,7 +77,10 @@ async def llm_call(
             else:
                 raise ValueError(f"Unknown message type {_msg['type']}")
         result = await llm.agenerate_prompt(
-            [ChatPromptValue(messages=messages)], callbacks=all_callbacks, stop=stop
+            [ChatPromptValue(messages=messages)],
+            callbacks=all_callbacks,
+            stop=stop,
+            **parameters,
         )
         llm_call_info.raw_response = result.llm_output
 
