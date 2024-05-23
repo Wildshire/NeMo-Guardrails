@@ -65,8 +65,8 @@ async def self_check_input(
             task=Task.SELF_CHECK_INPUT.value
         )
 
-        with llm_params(llm, **parameters):
-            check = await llm_call(llm, prompt, stop=stop)
+        with llm_params(llm):
+            check = await llm_call(llm, prompt, parameters=parameters, stop=stop)
 
         check = check.lower().strip()
         log.info(f"Input self-checking result is: `{check}`.")
