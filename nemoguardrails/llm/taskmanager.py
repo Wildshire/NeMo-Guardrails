@@ -264,6 +264,11 @@ class LLMTaskManager:
         prompt = get_prompt(self.config, task)
         return prompt.stop
 
+    def get_task_parameters(self, task: Union[str, Task]) -> List[str]:
+        """Return the parameters for the given task."""
+        prompt = get_prompt(self.config, task)
+        return prompt.parameters
+
     def register_filter(self, filter_fn: callable, name: Optional[str] = None):
         """Register a custom filter for the rails configuration."""
         name = name or filter_fn.__name__

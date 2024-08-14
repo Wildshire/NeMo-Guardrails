@@ -396,9 +396,13 @@ class LLMGenerationActions:
             # Initialize the LLMCallInfo object
             llm_call_info_var.set(LLMCallInfo(task=Task.GENERATE_USER_INTENT.value))
 
+            parameters = self.llm_task_manager.get_task_parameters(
+                task=Task.GENERATE_USER_INTENT.value
+            )
+
             # We make this call with temperature 0 to have it as deterministic as possible.
-            with llm_params(llm, temperature=self.config.lowest_temperature):
-                result = await llm_call(llm, prompt)
+            with llm_params(llm):
+                result = await llm_call(llm, prompt, parameters=parameters)
 
             # Parse the output using the associated parser
             result = self.llm_task_manager.parse_task_output(
@@ -458,6 +462,10 @@ class LLMGenerationActions:
                     # Initialize the LLMCallInfo object
                     llm_call_info_var.set(LLMCallInfo(task=Task.GENERAL.value))
 
+                    parameters = self.llm_task_manager.get_task_parameters(
+                        task=Task.GENERATE_USER_INTENT.value
+                    )
+
                     generation_options: GenerationOptions = generation_options_var.get()
                     with llm_params(
                         llm,
@@ -469,6 +477,7 @@ class LLMGenerationActions:
                             llm,
                             prompt,
                             custom_callback_handlers=[streaming_handler_var.get()],
+                            parameters=parameters,
                         )
             else:
                 # Initialize the LLMCallInfo object
@@ -477,6 +486,9 @@ class LLMGenerationActions:
                 # Otherwise, we still create an altered prompt.
                 prompt = self.llm_task_manager.render_task_prompt(
                     task=Task.GENERAL, events=events
+                )
+                parameters = self.llm_task_manager.get_task_parameters(
+                    task=Task.GENERATE_USER_INTENT.value
                 )
 
                 generation_options: GenerationOptions = generation_options_var.get()
@@ -489,6 +501,7 @@ class LLMGenerationActions:
                         prompt,
                         custom_callback_handlers=[streaming_handler_var.get()],
                         stop=["User:"],
+                        parameters=parameters,
                     )
 
                 text = result.strip()
@@ -564,9 +577,13 @@ class LLMGenerationActions:
             # Initialize the LLMCallInfo object
             llm_call_info_var.set(LLMCallInfo(task=Task.GENERATE_NEXT_STEPS.value))
 
-            # We use temperature 0 for next step prediction as well
-            with llm_params(llm, temperature=self.config.lowest_temperature):
-                result = await llm_call(llm, prompt)
+            parameters = self.llm_task_manager.get_task_parameters(
+                task=Task.GENERATE_NEXT_STEPS.value
+            )
+
+            # We make this call with temperature 0 to have it as deterministic as possible.
+            with llm_params(llm):
+                result = await llm_call(llm, prompt, parameters=parameters)
 
             # Parse the output using the associated parser
             result = self.llm_task_manager.parse_task_output(
@@ -801,6 +818,10 @@ class LLMGenerationActions:
                     # in passthrough mode, input rails can still alter the input.
                     prompt = context.get("user_message")
 
+                    parameters = self.llm_task_manager.get_task_parameters(
+                        task=Task.GENERATE_BOT_MESSAGE.value
+                    )
+
                     generation_options: GenerationOptions = generation_options_var.get()
                     with llm_params(
                         llm,
@@ -809,7 +830,10 @@ class LLMGenerationActions:
                         ),
                     ):
                         result = await llm_call(
-                            llm, prompt, custom_callback_handlers=[streaming_handler]
+                            llm,
+                            prompt,
+                            parameters=parameters,
+                            custom_callback_handlers=[streaming_handler],
                         )
 
                     log.info(
@@ -858,13 +882,20 @@ class LLMGenerationActions:
                 # Initialize the LLMCallInfo object
                 llm_call_info_var.set(LLMCallInfo(task=Task.GENERATE_BOT_MESSAGE.value))
 
+                parameters = self.llm_task_manager.get_task_parameters(
+                    task=Task.GENERATE_BOT_MESSAGE.value
+                )
+
                 generation_options: GenerationOptions = generation_options_var.get()
                 with llm_params(
                     llm,
                     **((generation_options and generation_options.llm_params) or {}),
                 ):
                     result = await llm_call(
-                        llm, prompt, custom_callback_handlers=[streaming_handler]
+                        llm,
+                        prompt,
+                        custom_callback_handlers=[streaming_handler],
+                        parameters=parameters,
                     )
 
                 log.info(
@@ -961,8 +992,12 @@ class LLMGenerationActions:
         # Initialize the LLMCallInfo object
         llm_call_info_var.set(LLMCallInfo(task=Task.GENERATE_VALUE.value))
 
-        with llm_params(llm, temperature=self.config.lowest_temperature):
-            result = await llm_call(llm, prompt)
+        parameters = self.llm_task_manager.get_task_parameters(
+            task=Task.GENERATE_VALUE.value
+        )
+
+        with llm_params(llm):
+            result = await llm_call(llm, prompt, parameters=parameters)
 
         # Parse the output using the associated parser
         result = self.llm_task_manager.parse_task_output(
@@ -1129,7 +1164,12 @@ class LLMGenerationActions:
                 # We buffer the content, so we can get a chance to look at the
                 # first k lines.
                 await _streaming_handler.enable_buffering()
-                with llm_params(llm, temperature=self.config.lowest_temperature):
+
+                parameters = self.llm_task_manager.get_task_parameters(
+                    task=Task.GENERATE_INTENT_STEPS_MESSAGE.value
+                )
+
+                with llm_params(llm, **parameters):
                     asyncio.create_task(
                         llm_call(
                             llm,
@@ -1161,13 +1201,17 @@ class LLMGenerationActions:
                     LLMCallInfo(task=Task.GENERATE_INTENT_STEPS_MESSAGE.value)
                 )
 
+                parameters = self.llm_task_manager.get_task_parameters(
+                    task=Task.GENERATE_INTENT_STEPS_MESSAGE.value
+                )
+
                 generation_options: GenerationOptions = generation_options_var.get()
+
                 additional_params = {
-                    **((generation_options and generation_options.llm_params) or {}),
-                    "temperature": self.config.lowest_temperature,
+                    **((generation_options and generation_options.llm_params) or {})
                 }
                 with llm_params(llm, **additional_params):
-                    result = await llm_call(llm, prompt)
+                    result = await llm_call(llm, prompt, parameters=parameters)
 
             # Parse the output using the associated parser
             result = self.llm_task_manager.parse_task_output(
@@ -1241,12 +1285,17 @@ class LLMGenerationActions:
             # Initialize the LLMCallInfo object
             llm_call_info_var.set(LLMCallInfo(task=Task.GENERAL.value))
 
+            parameters = self.llm_task_manager.get_task_parameters(
+                task=Task.GENERATE_INTENT_STEPS_MESSAGE.value
+            )
+
             # We make this call with temperature 0 to have it as deterministic as possible.
             generation_options: GenerationOptions = generation_options_var.get()
             with llm_params(
-                llm, **((generation_options and generation_options.llm_params) or {})
+                llm,
+                **((generation_options and generation_options.llm_params) or {}),
             ):
-                result = await llm_call(llm, prompt)
+                result = await llm_call(llm, prompt, parameters=parameters)
 
             text = result.strip()
             if text.startswith('"'):
