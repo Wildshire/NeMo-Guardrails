@@ -181,7 +181,7 @@ define flow
   bot offer to help
 
 define bot express greeting
-  "Hello there!"
+  "Hello!"
 
 define bot offer to help
   "How can I help you today?"
